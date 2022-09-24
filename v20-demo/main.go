@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	http_service "http-framework-go/v20"
 	"net/http"
+	webframework "web-framework-go/v20"
 )
 
 type ApiJson struct {
@@ -13,10 +13,10 @@ type ApiJson struct {
 }
 
 func main() {
-	p1hservice := http_service.NewHTTPSrevice(
+	p1hservice := webframework.NewHTTPSrevice(
 		"http-service",
-		http_service.TestMiddlewareBuilder,
-		http_service.TimeCostMiddlewareBuilder,
+		webframework.TestMiddlewareBuilder,
+		webframework.TimeCostMiddlewareBuilder,
 	)
 
 	httpApi(p1hservice)
@@ -25,13 +25,13 @@ func main() {
 }
 
 // httpApi 注册路由和处理方法
-func httpApi(p1hservice http_service.Service) {
-	p1hservice.RegisteRoute(http.MethodGet, "/api/test", func(p1c *http_service.HTTPContext) {
+func httpApi(p1hservice webframework.Service) {
+	p1hservice.RegisteRoute(http.MethodGet, "/api/test", func(p1c *webframework.HTTPContext) {
 		p1c.P1resW.WriteHeader(http.StatusOK)
 		_, _ = p1c.P1resW.Write([]byte("response, http.MethodGet, /api/test"))
 	})
 
-	p1hservice.RegisteRoute(http.MethodPost, "/api/post_json", func(p1c *http_service.HTTPContext) {
+	p1hservice.RegisteRoute(http.MethodPost, "/api/post_json", func(p1c *webframework.HTTPContext) {
 		reqData := &ApiJson{}
 		err := p1c.ReadJson(reqData)
 		if nil != err {
@@ -42,17 +42,17 @@ func httpApi(p1hservice http_service.Service) {
 		p1c.WriteJson(http.StatusOK, reqData)
 	})
 
-	p1hservice.RegisteRoute(http.MethodGet, "/user/info", func(p1c *http_service.HTTPContext) {
+	p1hservice.RegisteRoute(http.MethodGet, "/user/info", func(p1c *webframework.HTTPContext) {
 		p1c.P1resW.WriteHeader(http.StatusOK)
 		_, _ = p1c.P1resW.Write([]byte("response, http.MethodGet, /user/info/1"))
 	})
 
-	p1hservice.RegisteRoute(http.MethodGet, "/user/*", func(p1c *http_service.HTTPContext) {
+	p1hservice.RegisteRoute(http.MethodGet, "/user/*", func(p1c *webframework.HTTPContext) {
 		p1c.P1resW.WriteHeader(http.StatusOK)
 		_, _ = p1c.P1resW.Write([]byte("response, http.MethodGet, /user/*"))
 	})
 
-	p1hservice.RegisteRoute(http.MethodGet, "/user/order", func(p1c *http_service.HTTPContext) {
+	p1hservice.RegisteRoute(http.MethodGet, "/user/order", func(p1c *webframework.HTTPContext) {
 		p1c.P1resW.WriteHeader(http.StatusOK)
 		_, _ = p1c.P1resW.Write([]byte("response, http.MethodGet, /user/order"))
 	})

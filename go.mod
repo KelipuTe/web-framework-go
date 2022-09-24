@@ -1,4 +1,4 @@
-module http-framework-go
+module web-framework-go
 
 go 1.19
 

@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	http_service "http-framework-go/v22"
 	"net/http"
+	webframework "web-framework-go/v22"
 )
 
 type ApiJson struct {
@@ -13,34 +13,34 @@ type ApiJson struct {
 }
 
 func main() {
-	p1hshutdown := http_service.NewHTTPShutdown()
+	p1hshutdown := webframework.NewHTTPShutdown()
 
-	p1hservice := http_service.NewHTTPSrevice(
+	p1hservice := webframework.NewHTTPSrevice(
 		"http-service",
 		p1hshutdown.ReqInHandleCountBuilder,
-		http_service.TestMiddlewareBuilder,
-		http_service.TimeCostMiddlewareBuilder,
+		webframework.TestMiddlewareBuilder,
+		webframework.TimeCostMiddlewareBuilder,
 	)
 
 	httpApi(p1hservice)
 	go p1hservice.Start("127.0.0.1", "9501")
 
-	http_service.WaitForShutdown(
-		http_service.NotifyShutdownToGateway,
+	webframework.WaitForShutdown(
+		webframework.NotifyShutdownToGateway,
 		p1hshutdown.RejectNewRequestAndWaiting,
 		// 全部请求处理完了，就可以关闭服务了
-		http_service.ServiceShutdownBuilder(p1hservice))
+		webframework.ServiceShutdownBuilder(p1hservice))
 
 	fmt.Println("done")
 }
 
-func httpApi(p1hservice http_service.Service) {
-	p1hservice.RegisteRoute(http.MethodGet, "/api/test", func(p1c *http_service.HTTPContext) {
+func httpApi(p1hservice webframework.Service) {
+	p1hservice.RegisteRoute(http.MethodGet, "/api/test", func(p1c *webframework.HTTPContext) {
 		p1c.P1resW.WriteHeader(http.StatusOK)
 		_, _ = p1c.P1resW.Write([]byte("response, http.MethodGet, /api/test"))
 	})
 
-	p1hservice.RegisteRoute(http.MethodPost, "/api/post_json", func(p1c *http_service.HTTPContext) {
+	p1hservice.RegisteRoute(http.MethodPost, "/api/post_json", func(p1c *webframework.HTTPContext) {
 		reqData := &ApiJson{}
 		err := p1c.ReadJson(reqData)
 		if nil != err {
@@ -51,27 +51,27 @@ func httpApi(p1hservice http_service.Service) {
 		p1c.WriteJson(http.StatusOK, reqData)
 	})
 
-	p1hservice.RegisteRoute(http.MethodGet, "/user/info", func(p1c *http_service.HTTPContext) {
+	p1hservice.RegisteRoute(http.MethodGet, "/user/info", func(p1c *webframework.HTTPContext) {
 		p1c.P1resW.WriteHeader(http.StatusOK)
 		_, _ = p1c.P1resW.Write([]byte("response, http.MethodGet, /user/info/1"))
 	})
 
-	p1hservice.RegisteRoute(http.MethodGet, "/user/*", func(p1c *http_service.HTTPContext) {
+	p1hservice.RegisteRoute(http.MethodGet, "/user/*", func(p1c *webframework.HTTPContext) {
 		p1c.P1resW.WriteHeader(http.StatusOK)
 		_, _ = p1c.P1resW.Write([]byte("response, http.MethodGet, /user/*"))
 	})
 
-	p1hservice.RegisteRoute(http.MethodGet, "/user/:id", func(p1c *http_service.HTTPContext) {
+	p1hservice.RegisteRoute(http.MethodGet, "/user/:id", func(p1c *webframework.HTTPContext) {
 		p1c.P1resW.WriteHeader(http.StatusOK)
 		_, _ = p1c.P1resW.Write([]byte("response, http.MethodGet, /user/" + p1c.PathParams["id"]))
 	})
 
-	p1hservice.RegisteRoute(http.MethodGet, "/user/order", func(p1c *http_service.HTTPContext) {
+	p1hservice.RegisteRoute(http.MethodGet, "/user/order", func(p1c *webframework.HTTPContext) {
 		p1c.P1resW.WriteHeader(http.StatusOK)
 		_, _ = p1c.P1resW.Write([]byte("response, http.MethodGet, /user/order"))
 	})
 
-	p1hservice.RegisteRoute(http.MethodGet, "/user/order/:id/detail", func(p1c *http_service.HTTPContext) {
+	p1hservice.RegisteRoute(http.MethodGet, "/user/order/:id/detail", func(p1c *webframework.HTTPContext) {
 		p1c.P1resW.WriteHeader(http.StatusOK)
 		_, _ = p1c.P1resW.Write([]byte("response, http.MethodGet, /user/order/" + p1c.PathParams["id"] + "/detail"))
 	})
