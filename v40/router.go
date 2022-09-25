@@ -16,8 +16,12 @@ var (
 
 // RouterInterface 路由器的接口定义
 type RouterInterface interface {
+	// addRoute 添加路由
 	addRoute(method string, path string, f4h HTTPHandleFunc, s5f4mw ...HTTPMiddleware)
+	// findRoute 查找路由
 	findRoute(method string, path string) *routeInfo
+	// 服务器动前，将中间件扫描好，缓存到路由结点
+	middlewareCache()
 }
 
 // router 路由器
@@ -27,7 +31,6 @@ type router struct {
 	m3routingTree map[string]*routingNode
 }
 
-// addRoute 添加路由
 func (p7this *router) addRoute(method string, path string, f4h HTTPHandleFunc, s5f4mw ...HTTPMiddleware) {
 	if "" == path {
 		panic(StrPathCannotBeEmpty)
@@ -74,14 +77,15 @@ func (p7this *router) addRoute(method string, path string, f4h HTTPHandleFunc, s
 		}
 		p7node = t4p7child
 	}
-	// 添加路由的处理方法
+	// 给路由添加处理方法
 	if nil != p7node.f4handler {
 		panic(StrPathExist)
 	}
 	p7node.f4handler = f4h
+	// 给路由添加中间件
+	p7node.s5f4middleware = s5f4mw
 }
 
-// findRoute 查找路由
 func (p7this *router) findRoute(method string, path string) *routeInfo {
 	p7node, ok := p7this.m3routingTree[method]
 	if !ok {
@@ -118,6 +122,13 @@ func (p7this *router) findRoute(method string, path string) *routeInfo {
 	}
 	p7ri.p7node = p7node
 	return p7ri
+}
+
+func (p7this *router) middlewareCache() {
+	// 遍历每一个路由树
+	for _, p7node := range p7this.m3routingTree {
+		p7node.makeMiddlewareCache(nil)
+	}
 }
 
 func newRouter() router {

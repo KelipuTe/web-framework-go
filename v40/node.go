@@ -55,7 +55,10 @@ type routingNode struct {
 	// p7anyChild 通配符结点
 	p7anyChild *routingNode
 
+	// s5f4middleware 结点上注册的中间件
 	s5f4middleware []HTTPMiddleware
+	// s5f4middlewareCache 服务启动后，命中结点时，需要用到的所有中间件
+	s5f4middlewareCache []HTTPMiddleware
 }
 
 // findChild 构建路由树时，查询子结点
@@ -174,6 +177,42 @@ func (p7this *routingNode) createChild(part string, path string) *routingNode {
 		path:     path,
 	}
 	return p7this.m3routingTree[part]
+}
+
+// makeMiddlewareCache 服务启动前，查询并缓存结点需要用到的所有中间件
+func (p7this *routingNode) makeMiddlewareCache(s5f4mw []HTTPMiddleware) {
+	t4s5f4mw := make([]HTTPMiddleware, 0, len(s5f4mw))
+	// 上一层结点的中间件
+	if nil != s5f4mw {
+		t4s5f4mw = append(t4s5f4mw, s5f4mw...)
+	}
+	// 如果有通配符结点，则其他子结点需要把通配符结点上的中间件也加上
+	if nil != p7this.p7anyChild {
+		p7this.p7anyChild.makeMiddlewareCache(t4s5f4mw)
+		if nil != p7this.p7anyChild.s5f4middleware {
+			t4s5f4mw = append(t4s5f4mw, p7this.p7anyChild.s5f4middleware...)
+		}
+	}
+	// 添加这个结点上的中间件
+	if nil != p7this.s5f4middleware {
+		t4s5f4mw = append(t4s5f4mw, p7this.s5f4middleware...)
+	}
+
+	// 如果这个结点有处理方法，那么这个结点就不是中间结点而是有效的路由结点，需要缓存中间件结果
+	if nil != p7this.f4handler {
+		p7this.s5f4middlewareCache = make([]HTTPMiddleware, 0, len(t4s5f4mw))
+		p7this.s5f4middlewareCache = append(p7this.s5f4middlewareCache, t4s5f4mw...)
+	}
+	// 处理其余类型的子结点
+	if nil != p7this.p7regexpChild {
+		p7this.p7regexpChild.makeMiddlewareCache(t4s5f4mw)
+	}
+	if nil != p7this.p7paramChild {
+		p7this.p7paramChild.makeMiddlewareCache(t4s5f4mw)
+	}
+	for _, p7childNode := range p7this.m3routingTree {
+		p7childNode.makeMiddlewareCache(t4s5f4mw)
+	}
 }
 
 // matchChild 查询路由时，匹配子结点
